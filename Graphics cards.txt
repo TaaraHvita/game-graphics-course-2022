@@ -1,0 +1,28 @@
+Here are my graphics cards!
+
+PC: 
+	GIGABYTE GEFORCE RTX 3060Ti 8GB
+	Type: Dedicated GPU
+	API: DirectX 12 Ultimate, OpenGL
+	Shader Languages: GLSL, HLSL
+
+Phone:
+	SAMSUNG GALAXY S9
+	GPU: Mali-G72 MP18 
+	Type: Integrated GPU
+	API: OpenGL ES 3.2, Vulkan 1.0, OpenCL 2.0, DirectX 12 FL11_1 and Renderscript
+	Shader Languages: idk
+
+Tablet:
+	SAMSUNG GALAXY TAB A3
+	GPU: Mali-G71 MP2
+	Type: Integrated GPU
+	API:
+	Shader Languages:
+
+
+Nintendo Switch
+	GPU: 
+	Type: 
+	API:
+	Shader Languages:
