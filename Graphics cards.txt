@@ -6,6 +6,9 @@ PC:
 	API: DirectX 12 Ultimate, OpenGL
 	Shader Languages: GLSL, HLSL
 
+Laptop:
+	Nvidia GEFORCE GTX 1660Ti
+
 Phone:
 	SAMSUNG GALAXY S9
 	GPU: Mali-G72 MP18 
