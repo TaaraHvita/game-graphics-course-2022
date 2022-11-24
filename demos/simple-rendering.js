@@ -23,7 +23,7 @@ import {mat4, vec3, vec4} from "../node_modules/gl-matrix/esm/index.js"; //mathe
 //                  |/             |/
 //     -.5 -.5 .5   *--------------*  .5 -.5 .5
 
-import {positions, normals, indices} from "../blender/forklift.js"
+import {positions, normals, indices} from "../blender/icosphere.js"
 
 // ******************************************************
 // **               Geometry processing                **
