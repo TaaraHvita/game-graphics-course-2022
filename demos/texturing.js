@@ -129,12 +129,12 @@ let drawCall = app.createDrawCall(program, vertexArray)
 
 let skyboxDrawCall = app.createDrawCall(skyboxProgram, skyboxArray)
     .texture("cubemap", app.createCubemap({
-        negX: await loadTexture("nz.png"),
-        posX: await loadTexture("pz.png"),
-        negY: await loadTexture("ny.png"),
-        posY: await loadTexture("py.png"),
-        negZ: await loadTexture("px.png"),
-        posZ: await loadTexture("nx.png")
+        negX: await loadTexture("galaxylf.png"),
+        posX: await loadTexture("galaxyrt.png"),
+        negY: await loadTexture("galaxydn.png"),
+        posY: await loadTexture("galaxyup.png"),
+        negZ: await loadTexture("galaxyft.png"),
+        posZ: await loadTexture("galaxybk.png")
     }));
 
 function draw(timems) {

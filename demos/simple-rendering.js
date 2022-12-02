@@ -76,8 +76,8 @@ let fragmentShader = `
 // **             Application processing               **
 // ******************************************************
 
-let bgColor = vec4.fromValues(1.0, 0.5, 0.5, 1.0);
-let fgColor = vec4.fromValues(1.0, 0.9, 0.5, 1.0);
+let bgColor = vec4.fromValues(0.5, 0.5, 0.5, 1.0);
+let fgColor = vec4.fromValues(0.2, 0.2, 1.0, 1.0);
 
 
 app.clearColor(bgColor[0], bgColor[1], bgColor[2], bgColor[3])
