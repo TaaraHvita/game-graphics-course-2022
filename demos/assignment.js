@@ -6,6 +6,9 @@ import {mat4, vec3, mat3, vec4, vec2} from "../node_modules/gl-matrix/esm/index.
 import {positions, normals, indices} from "../blender/icosphere.js"
 import {positions as planePositions, uvs as planeUvs, indices as planeIndices} from "../blender/plane.js"
 
+// ******************************************************
+// **               Light configuration                **
+// ******************************************************
 let baseColor = vec3.fromValues(1.0, 0.1, 0.2);
 let ambientLightColor = vec3.fromValues(0.1, 0.1, 1.0);
 let numberOfPointLights = 2;
@@ -159,7 +162,7 @@ let mirrorArray = app.createVertexArray()
     .indexBuffer(planeIndicesBuffer);
 
 // Change the reflection texture resolution to checkout the difference
-let reflectionResolutionFactor = 0.2;
+let reflectionResolutionFactor = 1.0;
 let reflectionColorTarget = app.createTexture2D(app.width * reflectionResolutionFactor, app.height * reflectionResolutionFactor, {magFilter: PicoGL.LINEAR});
 let reflectionDepthTarget = app.createTexture2D(app.width * reflectionResolutionFactor, app.height * reflectionResolutionFactor, {internalFormat: PicoGL.DEPTH_COMPONENT16});
 let reflectionBuffer = app.createFramebuffer().colorTarget(0, reflectionColorTarget).depthTarget(reflectionDepthTarget);
