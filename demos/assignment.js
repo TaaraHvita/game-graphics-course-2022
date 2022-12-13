@@ -3,12 +3,9 @@
 import PicoGL from "../node_modules/picogl/build/module/picogl.js";
 import {mat4, vec3, mat3, vec4, vec2} from "../node_modules/gl-matrix/esm/index.js";
 
-import {positions, normals, indices} from "../blender/icosphere.js"
+import {positions, normals, indices} from "../blender/mustang.js"
 import {positions as planePositions, uvs as planeUvs, indices as planeIndices} from "../blender/plane.js"
 
-// ******************************************************
-// **               Light configuration                **
-// ******************************************************
 let baseColor = vec3.fromValues(1.0, 0.1, 0.2);
 let ambientLightColor = vec3.fromValues(0.1, 0.1, 1.0);
 let numberOfPointLights = 2;
@@ -285,15 +282,15 @@ function draw(timems) {
     let time = timems * 0.001;
 
     mat4.perspective(projMatrix, Math.PI / 2.5, app.width / app.height, 0.1, 100.0);
-    vec3.rotateY(cameraPosition, vec3.fromValues(0, 1, 3.4), vec3.fromValues(0, 0, 0), time * 0.05);
-    mat4.lookAt(viewMatrix, cameraPosition, vec3.fromValues(0, -0.5, 0), vec3.fromValues(0, 1, 0));
+    vec3.rotateY(cameraPosition, vec3.fromValues(9, 1, 3.4), vec3.fromValues(0, 0, 0), time * 0.05);
+    mat4.lookAt(viewMatrix, cameraPosition, vec3.fromValues(0, -0.5, 0), vec3.fromValues(0, 5, 0));
 
-    mat4.fromXRotation(rotateXMatrix, time * 0.1136 - Math.PI / 2);
+    mat4.fromXRotation(rotateXMatrix, time * 0 - Math.PI / 2); //object rotation
     mat4.fromZRotation(rotateYMatrix, time * 0.2235);
     mat4.mul(modelMatrix, rotateXMatrix, rotateYMatrix);
 
     mat4.fromXRotation(rotateXMatrix, 0.0);
-    mat4.fromYRotation(rotateYMatrix, time * 0.2354);
+    mat4.fromYRotation(rotateYMatrix, time * 0.3);
     mat4.mul(mirrorModelMatrix, rotateYMatrix, rotateXMatrix);
     mat4.translate(mirrorModelMatrix, mirrorModelMatrix, vec3.fromValues(0, -1, 0));
 
