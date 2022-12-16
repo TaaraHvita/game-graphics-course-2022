@@ -5,6 +5,7 @@ import {mat4, vec3, vec4, quat} from "../node_modules/gl-matrix/esm/index.js";
 
 import {positions, normals, indices} from "../blender/cube.js";
 
+
 // language=GLSL
 let fragmentShader = `
     #version 300 es    
@@ -64,6 +65,56 @@ let vertexShader = `
 `;
 
 // language=GLSL
+let girlFragmentShader = `
+    #version 300 es
+    precision highp float;
+    ${lightCalculationShader}
+    
+    uniform samplerCube cubemap;    
+        
+    in vec3 vNormal;
+    in vec3 viewDir;
+    
+    out vec4 outColor;
+    
+    void main()
+    {        
+        vec3 reflectedDir = reflect(viewDir, normalize(vNormal));
+        outColor = texture(cubemap, reflectedDir);
+        
+        // Try using a higher mipmap LOD to get a rough material effect without any performance impact
+        //outColor = textureLod(cubemap, reflectedDir, 7.0);
+    }
+`;
+
+// language=GLSL
+let girlVertexShader = `
+    #version 300 es
+    ${lightCalculationShader}
+            
+    uniform mat4 modelViewProjectionMatrix;
+    uniform mat4 modelMatrix;
+    uniform mat3 normalMatrix;
+    uniform vec3 cameraPosition; 
+    
+    layout(location=0) in vec4 position;
+    layout(location=1) in vec3 normal;
+    layout(location=2) in vec2 uv;
+        
+    out vec2 vUv;
+    out vec3 vNormal;
+    out vec3 viewDir;
+    
+    void main()
+    {
+        gl_Position = modelViewProjectionMatrix * position;           
+        vUv = uv;
+        viewDir = (modelMatrix * position).xyz - cameraPosition;                
+        vNormal = normalMatrix * normal;
+    }
+`;
+
+// language=GLSL
 let shadowFragmentShader = `
     #version 300 es
     precision highp float;
@@ -89,6 +140,12 @@ let shadowVertexShader = `
 
 let bgColor = vec4.fromValues(1.0, 0.2, 0.3, 1.0);
 let fgColor = vec4.fromValues(1.0, 0.9, 0.5, 1.0);
+
+let girlVertexArray = app.createVertexArray()
+    .vertexAttributeBuffer(0, app.createVertexBuffer(PicoGL.FLOAT, 3, girlPos))
+    .vertexAttributeBuffer(1, app.createVertexBuffer(PicoGL.FLOAT, 3, girlNorm))
+    .vertexAttributeBuffer(2, app.createVertexBuffer(PicoGL.FLOAT, 2, girlUvs))
+    .indexBuffer(app.createIndexBuffer(PicoGL.UNSIGNED_INT, 3, indices));
 
 app.enable(PicoGL.DEPTH_TEST)
    .enable(PicoGL.CULL_FACE)
