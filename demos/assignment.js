@@ -1,8 +1,6 @@
-// This demo demonstrates simple cubemap reflections and more complex planar reflections
-
-
-
+//cubemap reflections and more complex planar reflections
 //mirror is broken
+//girl model is also broken
 //car doesn't have a reflective texture
 
 
@@ -10,7 +8,7 @@ import PicoGL from "../node_modules/picogl/build/module/picogl.js";
 import {mat4, vec3, mat3, vec4, vec2} from "../node_modules/gl-matrix/esm/index.js";
 
 import {positions, normals, indices} from "../blender/mustang.js"
-import {positions as girlPos, normals as girlNorm, uvs as girlUvs} from "../blender/jess.js";
+import {positions as girlPos, normals as girlNorm, uvs as girlUvs, indices as girlIndices} from "../blender/jess.js";
 import {positions as planePositions, uvs as planeUvs, indices as planeIndices} from "../blender/plane.js"
 
 
@@ -35,7 +33,7 @@ let lightCalculationShader = `
         float diffuseIntensity = 1.0;
         float specularIntensity = 2.0;
         float specularPower = 100.0;
-        float metalness = 0.0;
+        float metalness = 0.5;
         vec3 viewDirection = normalize(cameraPosition.xyz - position);
         vec3 color = baseColor * ambientLightColor * ambientIntensity;
                 
@@ -206,17 +204,28 @@ let girlFragmentShader = `
     precision highp float;
     ${lightCalculationShader}
     
-    uniform samplerCube cubemap;    
+    uniform samplerCube cubemap;
+    uniform vec3 lightPosition;    
         
+    in vec2 v_uv;
+    in vec3 vPosition;
     in vec3 vNormal;
     in vec3 viewDir;
+    in vec4 vPositionFromLight;
+    in vec3 vModelPosition;
     
     out vec4 outColor;
     
     void main()
-    {        
+    {     
+        vec3 lightDirection = normalize(lightPosition - vPosition);
         vec3 reflectedDir = reflect(viewDir, normalize(vNormal));
         outColor = texture(cubemap, reflectedDir);
+
+        vec3 normal = normalize(vNormal);
+        vec3 eyeDirection = normalize(cameraPosition - vPosition);        
+        vec3 reflectionDirection = reflect(-lightDirection, normal);
+
         
         // Try using a higher mipmap LOD to get a rough material effect without any performance impact
         //outColor = textureLod(cubemap, reflectedDir, 7.0);
@@ -239,8 +248,10 @@ let girlVertexShader = `
     layout(location=2) in vec2 uv;
         
     out vec2 vUv;
+    out vec3 vPosition;
     out vec3 vNormal;
     out vec3 viewDir;
+    out vec4 vPositionFromLight;
     
     void main()
     {
@@ -276,7 +287,7 @@ let shadowVertexShader = `
 `;
 
 let program = app.createProgram(vertexShader, fragmentShader);
-let girlProgram = app.createProgram(girlVertexShader.trim(), girlFragmentShader.trim());
+let girlProgram = app.createProgram(girlVertexShader, girlFragmentShader);
 let skyboxProgram = app.createProgram(skyboxVertexShader, skyboxFragmentShader);
 let mirrorProgram = app.createProgram(mirrorVertexShader, mirrorFragmentShader);
 let shadowProgram = app.createProgram(shadowVertexShader, shadowFragmentShader);
@@ -290,6 +301,7 @@ let girlVertexArray = app.createVertexArray()
     .vertexAttributeBuffer(0, app.createVertexBuffer(PicoGL.FLOAT, 3, girlPos))
     .vertexAttributeBuffer(1, app.createVertexBuffer(PicoGL.FLOAT, 3, girlNorm))
     .vertexAttributeBuffer(2, app.createVertexBuffer(PicoGL.FLOAT, 2, girlUvs))
+    .indexBuffer(app.createIndexBuffer(PicoGL.UNSIGNED_INT, 3, girlIndices));
 
 
     // Change the shadow texture resolution to checkout the difference
@@ -483,7 +495,7 @@ function drawObjects(cameraPosition, viewMatrix) {
     girlDrawCall.uniform("cameraPosition",cameraPosition);
     girlDrawCall.uniform("modelMatrix", girlModelMatrix);
     girlDrawCall.uniform("normalMatrix", mat3.normalFromMat4(mat3.create(),girlModelMatrix));
-    mat4.fromRotationTranslationScale(girlModelMatrix, rotationYMatrix, vec3.fromValues(0, -0.5, 1), [2, 1, 1]);
+    mat4.fromRotationTranslationScale(girlModelMatrix, rotationYMatrix, vec3.fromValues(0, -0.5, 1), [1, 1.3, 1]);
     girlDrawCall.draw();
     
 
