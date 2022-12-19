@@ -10,8 +10,9 @@ import PicoGL from "../node_modules/picogl/build/module/picogl.js";
 import {mat4, vec3, mat3, vec4, vec2} from "../node_modules/gl-matrix/esm/index.js";
 
 import {positions, normals, indices} from "../blender/mustang.js"
-import {positions as planePositions, uvs as planeUvs, indices as planeIndices} from "../blender/plane.js"
 import {positions as girlPos, normals as girlNorm, uvs as girlUvs} from "../blender/jess.js";
+import {positions as planePositions, uvs as planeUvs, indices as planeIndices} from "../blender/plane.js"
+
 
 let baseColor = vec3.fromValues(1.0, 1.0, 1.0);
 let ambientLightColor = vec3.fromValues(0.1, 0.1, 1.0);
@@ -231,7 +232,7 @@ let girlVertexShader = `
     uniform mat4 modelViewProjectionMatrix;
     uniform mat4 modelMatrix;
     uniform mat3 normalMatrix;
-    uniform vec3 cameraPosition; 
+    //uniform vec3 cameraPosition; 
     
     layout(location=0) in vec4 position;
     layout(location=1) in vec3 normal;
@@ -275,6 +276,7 @@ let shadowVertexShader = `
 `;
 
 let program = app.createProgram(vertexShader, fragmentShader);
+let girlProgram = app.createProgram(girlVertexShader.trim(), girlFragmentShader.trim());
 let skyboxProgram = app.createProgram(skyboxVertexShader, skyboxFragmentShader);
 let mirrorProgram = app.createProgram(mirrorVertexShader, mirrorFragmentShader);
 let shadowProgram = app.createProgram(shadowVertexShader, shadowFragmentShader);
@@ -288,7 +290,6 @@ let girlVertexArray = app.createVertexArray()
     .vertexAttributeBuffer(0, app.createVertexBuffer(PicoGL.FLOAT, 3, girlPos))
     .vertexAttributeBuffer(1, app.createVertexBuffer(PicoGL.FLOAT, 3, girlNorm))
     .vertexAttributeBuffer(2, app.createVertexBuffer(PicoGL.FLOAT, 2, girlUvs))
-    .indexBuffer(app.createIndexBuffer(PicoGL.UNSIGNED_INT, 3, indices));
 
     // Change the shadow texture resolution to checkout the difference
 let shadowDepthTarget = app.createTexture2D(512, 512, {
@@ -335,6 +336,8 @@ let girlViewProjMatrix = mat4.create();
 let girlModelMatrix = mat4.create();
 let girlModelViewMatrix = mat4.create();
 let girlModelViewProjectionMatrix = mat4.create();
+let girlMirrorModelViewProjectionMatrix = mat4.create();
+let girlMirrorModelMatrix = mat4.create();
 let rotationYMatrix = mat4.create();
 
 let mirrorModelMatrix = mat4.create();
@@ -404,7 +407,8 @@ let drawCall = app.createDrawCall(program, vertexArray)
         wrapT: PicoGL.REPEAT
     }));
 
-let girlDrawCall = app.createDrawCall(program, vertexArray)
+let girlDrawCall = app.createDrawCall(girlProgram, girlVertexArray)
+    .texture("cubemap", cubemap)
     .uniform("ambientLightColor", ambientLightColor);
 
 let skyboxDrawCall = app.createDrawCall(skyboxProgram, skyboxArray)
@@ -458,6 +462,8 @@ function drawObjects(cameraPosition, viewMatrix) {
     mat4.multiply(modelViewMatrix, viewMatrix, modelMatrix);
     mat4.multiply(modelViewProjectionMatrix, viewProjMatrix, modelMatrix);
     mat4.multiply(girlModelViewMatrix,girlViewMatrix, girlModelMatrix);
+    mat4.multiply(girlModelViewProjectionMatrix, girlViewProjMatrix, girlModelMatrix);
+
 
     let skyboxViewProjectionMatrix = mat4.create();
     mat4.mul(skyboxViewProjectionMatrix, projMatrix, viewMatrix);
@@ -466,12 +472,21 @@ function drawObjects(cameraPosition, viewMatrix) {
     app.clear();
 
     app.disable(PicoGL.DEPTH_TEST);
-    app.disable(PicoGL.CULL_FACE);
+    app.gl.cullFace(app.gl.FRONT);
     skyboxDrawCall.uniform("viewProjectionInverse", skyboxViewProjectionInverse);
     skyboxDrawCall.draw();
 
     app.enable(PicoGL.DEPTH_TEST);
-    app.enable(PicoGL.CULL_FACE);
+    app.gl.cullFace(app.gl.BACK);
+    girlDrawCall.uniform("modelViewProjectionMatrix", girlModelViewProjectionMatrix);
+    girlDrawCall.uniform("cameraPosition",cameraPosition);
+    girlDrawCall.uniform("modelMatrix", girlModelMatrix);
+    girlDrawCall.uniform("normalMatrix", mat3.normalFromMat4(mat3.create(),girlModelMatrix));
+    mat4.fromRotationTranslationScale(girlModelMatrix, rotationYMatrix, vec3.fromValues(0, -0.5, 1), [20, -45, 20]);
+    girlDrawCall.draw();
+    
+
+
     drawCall.uniform("modelViewProjectionMatrix", modelViewProjectionMatrix);
     drawCall.uniform("cameraPosition", cameraPosition);
     drawCall.uniform("modelMatrix", modelMatrix);
@@ -492,6 +507,7 @@ function drawMirror() {
 
 function draw(timems) {
     requestAnimationFrame(draw); // calling this first made my animation play.
+    drawMirror();
     
 
     let time = timems * 0.001;
@@ -515,19 +531,24 @@ function draw(timems) {
     mat4.fromZRotation(rotateYMatrix, time * 0.2235); //object rotation Y axis
     mat4.mul(modelMatrix, rotateXMatrix, rotateYMatrix);
 
+    mat4.fromXRotation(rotateXMatrix, time * 0 - Math.PI / 2);
+    mat4.fromYRotation(rotateYMatrix, time * 0.3);
+    mat4.mul(girlModelMatrix, rotateYMatrix, rotateXMatrix);
+
+
     mat4.fromXRotation(rotateXMatrix, 0.0);
     mat4.fromYRotation(rotateYMatrix, time * 0.3);
     mat4.mul(mirrorModelMatrix, rotateYMatrix, rotateXMatrix);
-    mat4.translate(mirrorModelMatrix, mirrorModelMatrix, vec3.fromValues(0, -1, 0));
+    mat4.translate(mirrorModelMatrix, mirrorModelMatrix, vec3.fromValues(0, 1, 0));
 
     vec3.set(lightPosition, 5, 5, 2.5);
     
     
     renderReflectionTexture();
-    drawObjects(cameraPosition, viewMatrix);
+    drawObjects(cameraPosition, viewMatrix, girlViewMatrix);
     renderShadowMap();
     drawObjects(drawCall);
-    drawMirror();
+    
     
     app.clear();
 
