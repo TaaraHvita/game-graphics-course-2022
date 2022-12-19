@@ -1,14 +1,15 @@
-//cubemap reflections and more complex planar reflections
+//cubemap reflections and more complex planar reflections in the mirror (WHICH DOESN'T WORK)
 //mirror is broken
 //girl model is also broken
 //car doesn't have a reflective texture
+//Blinn-Phong lighting
 
 
 import PicoGL from "../node_modules/picogl/build/module/picogl.js";
 import {mat4, vec3, mat3, vec4, vec2} from "../node_modules/gl-matrix/esm/index.js";
 
 import {positions, normals, indices} from "../blender/mustang.js"
-import {positions as girlPos, normals as girlNorm, uvs as girlUvs, indices as girlIndices} from "../blender/jess.js";
+import {positions as girlPos, normals as girlNorm, indices as girlIndices} from "../blender/jess.js";
 import {positions as planePositions, uvs as planeUvs, indices as planeIndices} from "../blender/plane.js"
 
 
@@ -300,7 +301,6 @@ let vertexArray = app.createVertexArray()
 let girlVertexArray = app.createVertexArray()
     .vertexAttributeBuffer(0, app.createVertexBuffer(PicoGL.FLOAT, 3, girlPos))
     .vertexAttributeBuffer(1, app.createVertexBuffer(PicoGL.FLOAT, 3, girlNorm))
-    .vertexAttributeBuffer(2, app.createVertexBuffer(PicoGL.FLOAT, 2, girlUvs))
     .indexBuffer(app.createIndexBuffer(PicoGL.UNSIGNED_INT, 3, girlIndices));
 
 
@@ -461,7 +461,7 @@ function renderShadowMap() {
     mat4.perspective(projMatrix, Math.PI * 0.1, shadowDepthTarget.width / shadowDepthTarget.height, 0.1, 100.0);
     mat4.multiply(lightViewProjMatrix, projMatrix, lightViewMatrix);
 
-    //drawObjects(shadowDrawCall);
+    drawObjects(shadowDrawCall);
 
     app.gl.cullFace(app.gl.BACK);
     app.defaultDrawFramebuffer();
@@ -495,7 +495,7 @@ function drawObjects(cameraPosition, viewMatrix) {
     girlDrawCall.uniform("cameraPosition",cameraPosition);
     girlDrawCall.uniform("modelMatrix", girlModelMatrix);
     girlDrawCall.uniform("normalMatrix", mat3.normalFromMat4(mat3.create(),girlModelMatrix));
-    mat4.fromRotationTranslationScale(girlModelMatrix, rotationYMatrix, vec3.fromValues(0, -0.5, 1), [1, 1.3, 1]);
+    mat4.fromRotationTranslationScale(girlModelMatrix, rotationYMatrix, vec3.fromValues(0, -0.1, 10), [1, 1.8, 15]);
     girlDrawCall.draw();
     
 
@@ -520,7 +520,7 @@ function drawMirror() {
 
 function draw(timems) {
     requestAnimationFrame(draw); // calling this first made my animation play.
-    drawMirror();
+    
     
 
     let time = timems * 0.001;
@@ -544,9 +544,9 @@ function draw(timems) {
     mat4.fromZRotation(rotateYMatrix, time * 0.2235); //object rotation Y axis
     mat4.mul(modelMatrix, rotateXMatrix, rotateYMatrix);
 
-    mat4.fromXRotation(rotateXMatrix, time * 0 - Math.PI / 2);
+    mat4.fromXRotation(rotateXMatrix, time * 0.1123 - Math.PI / 2);
     mat4.fromYRotation(rotateYMatrix, time * 0.3);
-    mat4.mul(girlModelMatrix, rotateYMatrix, rotateXMatrix);
+    mat4.mul(girlModelMatrix, rotateXMatrix, rotateYMatrix);
 
 
     mat4.fromXRotation(rotateXMatrix, time * 0);
@@ -560,7 +560,8 @@ function draw(timems) {
     renderReflectionTexture();
     drawObjects(cameraPosition, viewMatrix, girlViewMatrix);
     renderShadowMap();
-    drawObjects(drawCall);
+    drawObjects(drawCall, girlDrawCall);
+    drawMirror();
 
     
 }
