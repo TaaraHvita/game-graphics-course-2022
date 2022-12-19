@@ -291,6 +291,7 @@ let girlVertexArray = app.createVertexArray()
     .vertexAttributeBuffer(1, app.createVertexBuffer(PicoGL.FLOAT, 3, girlNorm))
     .vertexAttributeBuffer(2, app.createVertexBuffer(PicoGL.FLOAT, 2, girlUvs))
 
+
     // Change the shadow texture resolution to checkout the difference
 let shadowDepthTarget = app.createTexture2D(512, 512, {
     internalFormat: PicoGL.DEPTH_COMPONENT16,
@@ -448,7 +449,7 @@ function renderShadowMap() {
     mat4.perspective(projMatrix, Math.PI * 0.1, shadowDepthTarget.width / shadowDepthTarget.height, 0.1, 100.0);
     mat4.multiply(lightViewProjMatrix, projMatrix, lightViewMatrix);
 
-    drawObjects(shadowDrawCall);
+    //drawObjects(shadowDrawCall);
 
     app.gl.cullFace(app.gl.BACK);
     app.defaultDrawFramebuffer();
@@ -482,7 +483,7 @@ function drawObjects(cameraPosition, viewMatrix) {
     girlDrawCall.uniform("cameraPosition",cameraPosition);
     girlDrawCall.uniform("modelMatrix", girlModelMatrix);
     girlDrawCall.uniform("normalMatrix", mat3.normalFromMat4(mat3.create(),girlModelMatrix));
-    mat4.fromRotationTranslationScale(girlModelMatrix, rotationYMatrix, vec3.fromValues(0, -0.5, 1), [20, -45, 20]);
+    mat4.fromRotationTranslationScale(girlModelMatrix, rotationYMatrix, vec3.fromValues(0, -0.5, 1), [2, 1, 1]);
     girlDrawCall.draw();
     
 
@@ -536,8 +537,8 @@ function draw(timems) {
     mat4.mul(girlModelMatrix, rotateYMatrix, rotateXMatrix);
 
 
-    mat4.fromXRotation(rotateXMatrix, 0.0);
-    mat4.fromYRotation(rotateYMatrix, time * 0.3);
+    mat4.fromXRotation(rotateXMatrix, time * 0);
+    mat4.fromYRotation(rotateYMatrix, time * 0.2235);
     mat4.mul(mirrorModelMatrix, rotateYMatrix, rotateXMatrix);
     mat4.translate(mirrorModelMatrix, mirrorModelMatrix, vec3.fromValues(0, 1, 0));
 
@@ -548,9 +549,6 @@ function draw(timems) {
     drawObjects(cameraPosition, viewMatrix, girlViewMatrix);
     renderShadowMap();
     drawObjects(drawCall);
-    
-    
-    app.clear();
 
     
 }
